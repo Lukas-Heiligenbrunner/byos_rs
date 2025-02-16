@@ -1,0 +1,29 @@
+[package]
+name = "byos_rs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = "1.42.0"
+anyhow = "1.0.94"
+dotenvy = "0.15.7"
+
+rocket = "0.5.1"
+utoipa = { version = "5.3.1", features = ["rocket_extras"] }
+utoipa-redoc = { version = "6.0.0", features = ["rocket"] }
+utoipa-scalar = { version = "0.3.0", features = ["rocket"] }
+
+env_logger = "0.11.5"
+log = "0.4.22"
+
+serde = "1.0.215"
+serde_json = "1.0.133"
+
+[target.aarch64-unknown-linux-gnu.dependencies]
+openssl = { version = "*", features = ["vendored"] }
+
+[profile.release]
+strip = "debuginfo"  # Automatically strip symbols from the binary.
+opt-level = "z"  # Optimize for size.
+lto = true  # Enable link-time optimization.
+codegen-units = 1
