@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
+      - uses: brndnmtthws/rust-action-rustup@v1
       - name: Update local toolchain
         run: |
           rustup update
