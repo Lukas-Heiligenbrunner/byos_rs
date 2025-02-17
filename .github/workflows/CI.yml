@@ -25,6 +25,5 @@ jobs:
 
       - name: Lint
         run: |
-          cd backend
           cargo fmt -- --check
           cargo clippy -- -D warnings    
