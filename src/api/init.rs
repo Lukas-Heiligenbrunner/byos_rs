@@ -5,8 +5,6 @@ use crate::api::setup::*;
 use crate::config;
 use log::{error, info};
 use rocket::{routes, Config, Route};
-use std::collections::VecDeque;
-use tokio::sync::Mutex;
 use tokio::task::JoinHandle;
 use utoipa::OpenApi;
 use utoipa_redoc::{Redoc, Servable as _};
@@ -37,16 +35,7 @@ pub fn init_api(schedule_config: config::types::Config) -> JoinHandle<()> {
         )]
         struct ApiDoc;
 
-        let image_paths = vec![
-            "logo.bmp".to_string(),
-            "peter.bmp".to_string(),
-            "mathmeme.bmp".to_string(),
-        ];
-
         let rock = rocket::custom(config)
-            .manage(ImageBuffer {
-                images: Mutex::new(VecDeque::from(image_paths)),
-            })
             .manage(schedule_config)
             .mount("/api/", build_api())
             .mount("/", Scalar::with_url("/docs", ApiDoc::openapi()))

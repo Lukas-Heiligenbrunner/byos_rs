@@ -1,5 +1,7 @@
 mod api;
 mod config;
+mod plugins;
+mod renderer;
 
 use crate::api::init::init_api;
 use crate::config::parse::parse_config;

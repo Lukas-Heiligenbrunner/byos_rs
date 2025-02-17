@@ -25,9 +25,15 @@ pub enum Plugin {
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct StandardPlugin {
-    pub name: String,
-    pub template_view: String,
-    pub content_file: String,
+    pub plugin_type: StandardPluginType,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+#[serde(rename_all = "lowercase")] // Ensures YAML values match Rust enum variants
+pub enum StandardPluginType {
+    GithubCommitGraph,
+    Weather,
+    News,
 }
 
 #[derive(Debug, Deserialize, Clone)]

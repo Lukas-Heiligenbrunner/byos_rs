@@ -1,7 +1,5 @@
 default_screen:
-  name: "DefaultPlugin"  # Plugin to use for displaying the screen
-  template_view: "TemplateView1"  # if not defined use the first html template
-  content_file: "content_screen1.json"  # if not defined use the first .rb file
+  plugin_type: githubcommitgraph
 
 schedules:
   - screen: "Screen1"
@@ -10,18 +8,14 @@ schedules:
     update_interval: 600
     days: ["Monday", "Wednesday", "Friday"]
     plugin:
-      name: "PluginA"  # Plugin to use for displaying the screen
-      template_view: "TemplateView1"  # if not defined use the first html template
-      content_file: "content_screen1.json"  # if not defined use the first .rb file
+      plugin_type: githubcommitgraph
   - screen: "Screen2"
     start_time: "10:58"
     end_time: "16:00"
     update_interval: 600
     days: ["Monday", "Wednesday", "Friday"]
     plugin:
-      name: "PluginB"  # Plugin to use for displaying the screen
-      template_view: "TemplateView2"  # Template view to use
-      content_file: "content_screen2.json"  # File to retrieve content for this template
+      plugin_type: githubcommitgraph
   - screen: "Screen3"
     start_time: "12:00"
     end_time: "14:00"
