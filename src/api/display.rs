@@ -1,13 +1,12 @@
-use std::collections::VecDeque;
-use rocket::{get, State};
-use rocket::response::status::BadRequest;
 use rocket::serde::json::Json;
+use rocket::{get, State};
 use serde::{Deserialize, Serialize};
+use std::collections::VecDeque;
 use tokio::sync::Mutex;
 use utoipa::OpenApi;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct DisplayResponse {
+pub struct DisplayResponse {
     status: u32,
     image_url: String,
     filename: String,
@@ -32,7 +31,9 @@ pub struct ImageBuffer {
     )
 )]
 #[get("/display")]
-pub async fn display(state: &State<ImageBuffer>) -> Result<Json<DisplayResponse>, rocket::http::Status> {
+pub async fn display(
+    state: &State<ImageBuffer>,
+) -> Result<Json<DisplayResponse>, rocket::http::Status> {
     let mut images = state.images.lock().await;
 
     // Rotate the buffer
@@ -41,7 +42,7 @@ pub async fn display(state: &State<ImageBuffer>) -> Result<Json<DisplayResponse>
 
         Ok(Json(DisplayResponse {
             status: 0,
-            image_url: format!("http://192.168.0.194:8080/api/v1/media/{}", image),
+            image_url: format!("http://192.168.0.194:8080/api/media/{}", image),
             filename: image,
             refresh_rate: 60,
             reset_firmware: false,

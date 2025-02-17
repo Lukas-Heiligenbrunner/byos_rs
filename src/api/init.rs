@@ -1,15 +1,15 @@
-use std::collections::VecDeque;
-use log::{error, info};
-use rocket::{routes, Config, Route};
-use tokio::sync::Mutex;
-use tokio::task::JoinHandle;
-use utoipa::{OpenApi};
-use utoipa_redoc::{Redoc, Servable as _};
-use utoipa_scalar::{Scalar, Servable as _};
 use crate::api::display::*;
 use crate::api::log::*;
-use crate::api::screen::*;
+use crate::api::media::*;
 use crate::api::setup::*;
+use log::{error, info};
+use rocket::{routes, Config, Route};
+use std::collections::VecDeque;
+use tokio::sync::Mutex;
+use tokio::task::JoinHandle;
+use utoipa::OpenApi;
+use utoipa_redoc::{Redoc, Servable as _};
+use utoipa_scalar::{Scalar, Servable as _};
 
 pub fn init_api() -> JoinHandle<()> {
     tokio::spawn(async {
@@ -24,7 +24,7 @@ pub fn init_api() -> JoinHandle<()> {
             nest(
                 (path = "/api", api = crate::api::display::DisplayApi, tags = ["Display"]),
                 (path = "/api", api = crate::api::log::LogApi, tags = ["Log"]),
-                (path = "/api", api = crate::api::screen::ScreenApi, tags = ["Screen"]),
+                (path = "/api", api = crate::api::media::MediaApi, tags = ["Screen"]),
                 (path = "/api", api = crate::api::setup::SetupApi, tags = ["Setup"]),
             ),
             tags(
@@ -59,11 +59,5 @@ pub fn init_api() -> JoinHandle<()> {
 }
 
 pub fn build_api() -> Vec<Route> {
-    routes![
-        setup,
-        media,
-        generate_screen,
-        display,
-        log_endpoint
-    ]
+    routes![setup, media, display, log_endpoint]
 }

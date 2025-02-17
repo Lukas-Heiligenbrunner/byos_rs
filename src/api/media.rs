@@ -1,21 +1,10 @@
-use rocket::{get, Response};
 use rocket::fs::NamedFile;
-use rocket::response::Responder;
+use rocket::get;
 use utoipa::OpenApi;
 
 #[derive(OpenApi)]
-#[openapi(paths(generate_screen, media))]
-pub struct ScreenApi;
-
-#[utoipa::path(
-    responses(
-            (status = 200, description = "Todo")
-    )
-)]
-#[get("/v1/generate_screen")]
-pub async fn generate_screen() -> Result<(), String> {
-    Ok(())
-}
+#[openapi(paths(media))]
+pub struct MediaApi;
 
 #[utoipa::path(
     responses(
@@ -23,7 +12,7 @@ pub async fn generate_screen() -> Result<(), String> {
         (status = 404, description = "File not found")
     )
 )]
-#[get("/v1/media/<filename>")]
+#[get("/media/<filename>")]
 pub async fn media(filename: &str) -> Result<NamedFile, rocket::http::Status> {
     Ok(NamedFile::open(format!("data/{}", filename)).await.unwrap())
 }

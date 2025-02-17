@@ -12,5 +12,5 @@ pub struct LogApi;
 )]
 #[get("/log")]
 pub async fn log_endpoint() -> Result<(), String> {
-    Ok(())
+    todo!("log from trmnl device");
 }

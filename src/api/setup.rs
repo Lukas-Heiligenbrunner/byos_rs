@@ -12,5 +12,5 @@ pub struct SetupApi;
 )]
 #[get("/setup")]
 pub async fn setup() -> Result<(), String> {
-    Ok(())
+    todo!("Setup new trmnl device");
 }

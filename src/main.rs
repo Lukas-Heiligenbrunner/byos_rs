@@ -1,10 +1,10 @@
 mod api;
 
-use std::str::FromStr;
+use crate::api::init::init_api;
 use dotenvy::dotenv;
 use env_logger::Env;
 use log::LevelFilter;
-use crate::api::init::init_api;
+use std::str::FromStr;
 
 #[tokio::main]
 async fn main() {

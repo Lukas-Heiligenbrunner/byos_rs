@@ -1,5 +1,5 @@
-pub mod init;
-mod setup;
-mod log;
 mod display;
-mod screen;
+pub mod init;
+mod log;
+mod media;
+mod setup;
