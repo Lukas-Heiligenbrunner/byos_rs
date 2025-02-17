@@ -1,6 +1,8 @@
 mod api;
+mod config;
 
 use crate::api::init::init_api;
+use crate::config::parse::parse_config;
 use dotenvy::dotenv;
 use env_logger::Env;
 use log::LevelFilter;
@@ -11,7 +13,9 @@ async fn main() {
     _ = dotenv();
     init_logger();
 
-    init_api().await.expect("Failed to start API server");
+    let config = parse_config().expect("Failed to parse configuration");
+
+    init_api(config).await.expect("Failed to start API server");
 }
 
 pub fn init_logger() {

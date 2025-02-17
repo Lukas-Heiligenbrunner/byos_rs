@@ -1,3 +1,4 @@
+use crate::config::types::{Config, Plugin};
 use rocket::serde::json::Json;
 use rocket::{get, State};
 use serde::{Deserialize, Serialize};
@@ -33,7 +34,24 @@ pub struct ImageBuffer {
 #[get("/display")]
 pub async fn display(
     state: &State<ImageBuffer>,
+    schedule_config: &State<Config>,
 ) -> Result<Json<DisplayResponse>, rocket::http::Status> {
+    let plugin = schedule_config.match_plugin();
+    match plugin {
+        Plugin::Standard(p) => {
+            println!("Rendering a standard plugin: {:?}", p);
+        }
+        Plugin::Custom(p) => {
+            println!("Rendering a custom plugin: {:?}", p);
+        }
+    }
+
+    // todo template html with selected plugin with its ruby code
+    // todo render html with returned html in headless browser engine
+    // todo hash html
+    // todo export image to bmp
+    // todo rename html including html hash
+
     let mut images = state.images.lock().await;
 
     // Rotate the buffer

@@ -18,6 +18,8 @@ log = "0.4.22"
 
 serde = "1.0.215"
 serde_json = "1.0.133"
+serde_yaml = "0.8"
+chrono = "0.4.39"
 
 [target.aarch64-unknown-linux-gnu.dependencies]
 openssl = { version = "*", features = ["vendored"] }
