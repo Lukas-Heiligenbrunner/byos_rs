@@ -58,8 +58,12 @@ impl Plugin for GithubCommitGraphPlugin {
         let contributions =
             data["data"]["user"]["contributionsCollection"]["contributionCalendar"].clone();
 
-        let total_contributions = contributions["totalContributions"].as_i64().unwrap_or(0);
-        let commits = contributions["weeks"].as_array().unwrap_or(&vec![]).clone();
+        let total_contributions = contributions["totalContributions"]
+            .as_i64()
+            .ok_or(anyhow::anyhow!("No contributions found"))?;
+        let commits = contributions["weeks"]
+            .as_array()
+            .ok_or(anyhow::anyhow!("No contributions found"))?;
 
         let mut days: Vec<_> = commits
             .iter()
@@ -81,7 +85,7 @@ impl Plugin for GithubCommitGraphPlugin {
             .iter()
             .map(|d| d["contributionCount"].as_i64().unwrap_or(0))
             .max()
-            .unwrap_or(0);
+            .ok_or(anyhow::anyhow!("No contributions found"))?;
         let average_contributions = (days
             .iter()
             .map(|d| d["contributionCount"].as_i64().unwrap_or(0))
