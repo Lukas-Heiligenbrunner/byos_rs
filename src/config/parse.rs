@@ -6,8 +6,8 @@ pub fn parse_config() -> anyhow::Result<Config> {
         Ok(config) => config,
         Err(_) => {
             let config_path = std::env::var("CONFIG_PATH")?;
-            let yaml_content = fs::read_to_string(config_path)?;
-            yaml_content
+            
+            fs::read_to_string(config_path)?
         }
     };
 
