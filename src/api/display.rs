@@ -1,5 +1,5 @@
 use crate::config::types::{Config, Plugin as PluginType, StandardPluginType};
-use crate::plugins::github_commit_graph::GithubCommitGraphPlugin;
+use crate::plugins::github_commit_graph::plugin::GithubCommitGraphPlugin;
 use crate::plugins::Plugin;
 use crate::renderer::render::render_html;
 use log::{error, info};
@@ -26,7 +26,6 @@ pub struct DisplayResponse {
 #[derive(OpenApi)]
 #[openapi(paths(display))]
 pub struct DisplayApi;
-
 
 #[utoipa::path(
     responses(
