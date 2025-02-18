@@ -5,8 +5,8 @@ use headless_chrome::protocol::cdp::Page::CaptureScreenshotFormatOption;
 use headless_chrome::protocol::cdp::Target::CreateTarget;
 use headless_chrome::{Browser, LaunchOptions};
 use image::{GenericImageView, Pixel};
-use std::io::{Cursor, Write};
 use log::warn;
+use std::io::{Cursor, Write};
 
 pub fn render_html(content: String, width: u32, height: u32) -> anyhow::Result<Vec<u8>> {
     let browser = Browser::new(LaunchOptions {
@@ -35,7 +35,7 @@ pub fn render_html(content: String, width: u32, height: u32) -> anyhow::Result<V
     element.scroll_into_view()?;
 
     let box_model = element.get_box_model()?;
-    let mut viewport = box_model.margin_viewport();
+    let viewport = box_model.margin_viewport();
     // default template renders at 800x480
     //viewport.width = width as f64;
     //viewport.height = height as f64;

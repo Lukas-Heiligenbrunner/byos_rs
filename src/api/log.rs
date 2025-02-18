@@ -1,8 +1,8 @@
-use std::fmt;
 use log::info;
-use rocket::{post};
-use rocket::serde::{Deserialize, Serialize};
+use rocket::post;
 use rocket::serde::json::Json;
+use rocket::serde::{Deserialize, Serialize};
+use std::fmt;
 use utoipa::{OpenApi, ToSchema};
 
 #[derive(OpenApi)]
@@ -70,19 +70,18 @@ pub struct AdditionalInfo {
     pub retry_attempt: u32,
 }
 
-
 #[utoipa::path(
     request_body = LogData,
     responses(
             (status = 200, description = "Todo", body = LogRespose)
     )
 )]
-#[post("/log", data="<logs>")]
+#[post("/log", data = "<logs>")]
 pub async fn log_endpoint(logs: Json<LogData>) -> Result<Json<LogRespose>, rocket::http::Status> {
     info!("Received logs:\n{}", *logs);
 
     Ok(Json(LogRespose {
         status: 200,
-        message: "Log received".to_string()
+        message: "Log received".to_string(),
     }))
 }

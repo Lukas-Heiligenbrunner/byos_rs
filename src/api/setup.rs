@@ -1,6 +1,6 @@
 use rocket::get;
-use rocket::serde::{Deserialize, Serialize};
 use rocket::serde::json::Json;
+use rocket::serde::{Deserialize, Serialize};
 use utoipa::{OpenApi, ToSchema};
 
 #[derive(OpenApi)]
@@ -14,7 +14,7 @@ pub struct SetupResponse {
     friendly_id: String,
     image_url: Option<String>,
     filename: Option<String>,
-    message: String
+    message: String,
 }
 
 #[utoipa::path(
@@ -30,6 +30,6 @@ pub async fn setup() -> Result<Json<SetupResponse>, String> {
         friendly_id: "myTrmnl".to_string(),
         image_url: None,
         filename: None,
-        message: "Setup complete".to_string()
+        message: "Setup complete".to_string(),
     }))
 }

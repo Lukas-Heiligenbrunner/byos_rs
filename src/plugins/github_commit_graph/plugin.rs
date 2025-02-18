@@ -1,18 +1,18 @@
+use crate::config::types::GithubCommitGraphConfig;
 use crate::plugins::github_commit_graph::commit_grayscale_filter::GitCommitGreyscale;
 use crate::plugins::github_commit_graph::utils::{
     calculate_current_streak, calculate_longest_streak,
 };
-use crate::plugins::{Plugin};
+use crate::plugins::utils::render_html;
+use crate::plugins::Plugin;
 use async_trait::async_trait;
 use liquid::ParserBuilder;
 use reqwest::Client;
 use serde::Deserialize;
 use serde_json::json;
-use crate::config::types::GithubCommitGraphConfig;
-use crate::plugins::utils::render_html;
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct GithubCommitGraphPlugin{
+pub struct GithubCommitGraphPlugin {
     pub(crate) config: GithubCommitGraphConfig,
 }
 #[async_trait]

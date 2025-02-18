@@ -1,4 +1,4 @@
-use crate::config::types::{Config, Plugin, Schedule};
+use crate::config::types::{Config, Schedule};
 use anyhow::anyhow;
 use chrono::Local;
 use log::warn;
@@ -54,7 +54,7 @@ fn schedule_active(schedule: &Schedule, today: String, curr_time: String) -> any
 }
 
 impl Config {
-    pub fn match_plugin(&self) -> Plugin {
+    pub fn match_plugin(&self) -> Schedule {
         // Get the current date and time
         let now = Local::now();
 
@@ -73,8 +73,15 @@ impl Config {
             })
             .collect::<Vec<&Schedule>>();
         match valid_schedules.first() {
-            None => self.default_screen.clone(),
-            Some(v) => v.plugin.clone(),
+            None => Schedule {
+                screen: "Default Screen".to_string(),
+                plugin: self.default_screen.clone(),
+                start_time: "00:00".to_string(),
+                end_time: "24:00".to_string(),
+                update_interval: 900,
+                days: vec![],
+            },
+            Some(v) => (*v).clone(),
         }
     }
 }

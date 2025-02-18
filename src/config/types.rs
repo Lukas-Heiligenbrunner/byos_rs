@@ -1,5 +1,4 @@
 use serde::Deserialize;
-use crate::plugins::github_commit_graph::plugin::GithubCommitGraphPlugin;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Config {
@@ -44,7 +43,6 @@ pub struct CustomPlugin {
     pub template: String,
     pub plugin_code: String,
 }
-
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct PluginConfig {

@@ -2,6 +2,7 @@ use crate::config::types::{Config, Plugin as PluginType, StandardPluginType};
 use crate::plugins::github_commit_graph::plugin::GithubCommitGraphPlugin;
 use crate::plugins::Plugin;
 use crate::renderer::render::render_html;
+use anyhow::anyhow;
 use log::{error, info};
 use rocket::serde::json::Json;
 use rocket::{get, State};
@@ -9,7 +10,6 @@ use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
-use anyhow::anyhow;
 use utoipa::OpenApi;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -37,7 +37,7 @@ pub struct DisplayApi;
 pub async fn display(
     schedule_config: &State<Config>,
 ) -> Result<Json<DisplayResponse>, rocket::http::Status> {
-    let filename = match create_screen(schedule_config).await {
+    let (filename, update_interval) = match create_screen(schedule_config).await {
         Ok(f) => f,
         Err(e) => {
             error!("Error creating screen: {:?}", e);
@@ -45,7 +45,7 @@ pub async fn display(
         }
     };
 
-    let server_url = std::env::var("OAUTH_USERINFO_URI").map_err(|e| {
+    let server_url = std::env::var("SERVER_URL").map_err(|e| {
         error!("Error getting server url: {:?}", e);
         rocket::http::Status::InternalServerError
     })?;
@@ -54,7 +54,7 @@ pub async fn display(
         status: 0,
         image_url: format!("{}/api/media/{}", server_url, filename),
         filename,
-        refresh_rate: 60,
+        refresh_rate: update_interval,
         reset_firmware: false,
         update_firmware: false,
         firmware_url: None,
@@ -62,27 +62,36 @@ pub async fn display(
     }))
 }
 
-async fn create_screen(schedule_config: &Config) -> anyhow::Result<String> {
-    let plugin_type = schedule_config.match_plugin();
+async fn create_screen(schedule_config: &Config) -> anyhow::Result<(String, u32)> {
+    let schedule = schedule_config.match_plugin();
     let plugin_configs = &schedule_config.plugin_config;
 
-    let plugin: Box<dyn Plugin> = match plugin_type {
+    let plugin: Box<dyn Plugin> = match schedule.plugin {
         PluginType::Standard(p) => {
             info!("Rendering a standard plugin: {:?}", p);
 
             match p.plugin_type {
-                StandardPluginType::GithubCommitGraph => Box::from(GithubCommitGraphPlugin {config: plugin_configs.githubcommitgraph.clone().unwrap()}),
+                StandardPluginType::GithubCommitGraph => Box::from(GithubCommitGraphPlugin {
+                    config: plugin_configs.githubcommitgraph.clone().unwrap(),
+                }),
                 StandardPluginType::Weather => todo!("Weather"),
                 StandardPluginType::News => todo!("News"),
             }
         }
         PluginType::Custom(p) => {
-            info!("Rendering a custom plugin: {:?}", p);
+            info!(
+                "Rendering a custom plugin: {};{};{}",
+                p.name, p.plugin_code, p.template
+            );
             todo!("Custom plugin rendering")
         }
     };
 
-    let html = plugin.render().await.map_err(|e| anyhow!("Error rendering plugin: {:?}", e))?;
+    info!("Rendering Screen: {}", schedule.screen);
+    let html = plugin
+        .render()
+        .await
+        .map_err(|e| anyhow!("Error rendering plugin: {:?}", e))?;
 
     let html_digest = md5::compute(html.as_bytes());
     let filename = format!("{:x}.bmp", html_digest);
@@ -90,19 +99,15 @@ async fn create_screen(schedule_config: &Config) -> anyhow::Result<String> {
 
     if Path::new(file_path.as_str()).exists() {
         info!("File already exists: {}", file_path);
-        return Ok(filename);
+        return Ok((filename, schedule.update_interval));
     }
 
-    let bmp = render_html(html, 1024, 614).map_err(|e|
-        anyhow!("Error rendering html: {:?}", e)
-    )?;
+    let bmp = render_html(html, 1024, 614).map_err(|e| anyhow!("Error rendering html: {:?}", e))?;
 
-    let mut file = File::create(file_path.as_str()).map_err(|e|
-        anyhow!("Error creating file: {:?}", e)
-    )?;
-    file.write_all(&bmp).map_err(|e|
-        anyhow!("Error writing file: {:?}", e)
-    )?;
+    let mut file =
+        File::create(file_path.as_str()).map_err(|e| anyhow!("Error creating file: {:?}", e))?;
+    file.write_all(&bmp)
+        .map_err(|e| anyhow!("Error writing file: {:?}", e))?;
 
-    Ok(filename)
+    Ok((filename, schedule.update_interval))
 }
