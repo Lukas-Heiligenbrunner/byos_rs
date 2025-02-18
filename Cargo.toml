@@ -18,7 +18,7 @@ log = "0.4.22"
 
 serde = "1.0.215"
 serde_json = "1.0.133"
-serde_yaml = "0.8"
+serde_yaml = "0.9.26"
 chrono = "0.4.39"
 liquid = "0.26.9"
 liquid-core = "0.26.9"

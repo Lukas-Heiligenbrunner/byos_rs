@@ -19,13 +19,11 @@ impl Filter for GitCommitGreyscaleFilter {
         let count = input.as_scalar().and_then(|s| s.to_integer()).unwrap_or(0);
         let shade = match count {
             0 => "bg-white",
-            1 => "bg--gray-7",
-            2 => "bg--gray-6",
-            3 => "bg--gray-5",
-            4 => "bg--gray-4",
-            5 => "bg--gray-3",
-            6 => "bg--gray-2",
-            7 => "bg--gray-1",
+            1 => "bg--gray-5",
+            2 => "bg--gray-4",
+            3 => "bg--gray-3",
+            4 => "bg--gray-2",
+            5 => "bg--gray-1",
             _ => "bg-black",
         };
         Ok(Value::Scalar(shade.to_string().into()))

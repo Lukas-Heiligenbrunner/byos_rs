@@ -6,8 +6,9 @@ use headless_chrome::protocol::cdp::Target::CreateTarget;
 use headless_chrome::{Browser, LaunchOptions};
 use image::{GenericImageView, Pixel};
 use std::io::{Cursor, Write};
+use log::warn;
 
-pub fn render_html(content: String) -> anyhow::Result<Vec<u8>> {
+pub fn render_html(content: String, width: u32, height: u32) -> anyhow::Result<Vec<u8>> {
     let browser = Browser::new(LaunchOptions {
         window_size: Some((1920, 1080)),
         ..Default::default()
@@ -35,7 +36,11 @@ pub fn render_html(content: String) -> anyhow::Result<Vec<u8>> {
 
     let box_model = element.get_box_model()?;
     let mut viewport = box_model.margin_viewport();
-    viewport.scale = 1.0;
+    // default template renders at 800x480
+    //viewport.width = width as f64;
+    //viewport.height = height as f64;
+    //viewport.scale = (width as f32 / 800.0) as JsFloat;
+    warn!("Viewport: {:?}", viewport);
 
     let screenshot = tab.capture_screenshot(
         CaptureScreenshotFormatOption::Png,
@@ -46,7 +51,7 @@ pub fn render_html(content: String) -> anyhow::Result<Vec<u8>> {
     // Convert PNG to BMP
     let img = image::load_from_memory(&screenshot)?;
     // Resize to 800x480
-    //let resized = img.resize_exact(800, 480, image::imageops::FilterType::Nearest);
+    let img = img.resize_exact(width, height, image::imageops::FilterType::Gaussian);
 
     // Convert to 1-bit
     let threshold = 128u8;

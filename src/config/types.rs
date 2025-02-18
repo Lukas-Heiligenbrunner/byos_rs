@@ -1,9 +1,11 @@
 use serde::Deserialize;
+use crate::plugins::github_commit_graph::plugin::GithubCommitGraphPlugin;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Config {
     pub default_screen: Plugin,
     pub schedules: Vec<Schedule>,
+    pub plugin_config: PluginConfig,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -41,4 +43,18 @@ pub struct CustomPlugin {
     pub name: String,
     pub template: String,
     pub plugin_code: String,
+}
+
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct PluginConfig {
+    /// Global config for the GithubCommitGraph plugin.
+    pub githubcommitgraph: Option<GithubCommitGraphConfig>,
+    // You can add configuration for other plugin types here if needed.
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct GithubCommitGraphConfig {
+    pub username: String,
+    pub api_key: String,
 }

@@ -2,18 +2,24 @@ use crate::plugins::github_commit_graph::commit_grayscale_filter::GitCommitGreys
 use crate::plugins::github_commit_graph::utils::{
     calculate_current_streak, calculate_longest_streak,
 };
-use crate::plugins::{render_html, Plugin};
+use crate::plugins::{Plugin};
 use async_trait::async_trait;
 use liquid::ParserBuilder;
 use reqwest::Client;
+use serde::Deserialize;
 use serde_json::json;
+use crate::config::types::GithubCommitGraphConfig;
+use crate::plugins::utils::render_html;
 
-pub struct GithubCommitGraphPlugin;
+#[derive(Clone, Debug, Deserialize)]
+pub struct GithubCommitGraphPlugin{
+    pub(crate) config: GithubCommitGraphConfig,
+}
 #[async_trait]
 impl Plugin for GithubCommitGraphPlugin {
     async fn render(&self) -> anyhow::Result<String> {
-        let username = "Lukas-Heiligenbrunner";
-        let token = "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";
+        let username = self.config.username.clone();
+        let token = self.config.api_key.clone();
         let client = Client::new();
 
         let query = r#"
