@@ -11,6 +11,7 @@ use std::io::{Cursor, Write};
 pub fn render_html(content: String, width: u32, height: u32) -> anyhow::Result<Vec<u8>> {
     let browser = Browser::new(LaunchOptions {
         window_size: Some((1920, 1080)),
+        sandbox: false,
         ..Default::default()
     })?;
 

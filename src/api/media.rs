@@ -14,5 +14,5 @@ pub struct MediaApi;
 )]
 #[get("/media/<filename>")]
 pub async fn media(filename: &str) -> Result<NamedFile, rocket::http::Status> {
-    Ok(NamedFile::open(format!("data/{}", filename)).await.unwrap())
+    Ok(NamedFile::open(format!("/tmp/{}", filename)).await.unwrap())
 }

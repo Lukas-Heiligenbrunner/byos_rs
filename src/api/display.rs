@@ -95,7 +95,7 @@ async fn create_screen(schedule_config: &Config) -> anyhow::Result<(String, u32)
 
     let html_digest = md5::compute(html.as_bytes());
     let filename = format!("{:x}.bmp", html_digest);
-    let file_path = format!("data/{}", filename);
+    let file_path = format!("/tmp/{}", filename);
 
     if Path::new(file_path.as_str()).exists() {
         info!("File already exists: {}", file_path);
