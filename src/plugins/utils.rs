@@ -1,4 +1,4 @@
-pub fn render_html(content: String) -> String {
+pub fn html_body(content: String) -> String {
     let s = format!(
         "
     <!DOCTYPE html>

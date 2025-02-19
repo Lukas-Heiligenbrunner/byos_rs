@@ -1,10 +1,10 @@
-use crate::config::types::GithubCommitGraphConfig;
 use crate::plugins::github_commit_graph::commit_grayscale_filter::GitCommitGreyscale;
 use crate::plugins::github_commit_graph::utils::{
     calculate_current_streak, calculate_longest_streak,
 };
-use crate::plugins::utils::render_html;
-use crate::plugins::Plugin;
+use crate::plugins::plugin::Plugin;
+use crate::plugins::utils::html_body;
+use crate::renderer::bmp_renderer::BmpRenderer;
 use async_trait::async_trait;
 use liquid::ParserBuilder;
 use reqwest::Client;
@@ -13,13 +13,13 @@ use serde_json::json;
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct GithubCommitGraphPlugin {
-    pub(crate) config: GithubCommitGraphConfig,
+    pub(crate) username: String,
+    pub(crate) api_key: String,
 }
+
 #[async_trait]
 impl Plugin for GithubCommitGraphPlugin {
-    async fn render(&self) -> anyhow::Result<String> {
-        let username = self.config.username.clone();
-        let token = self.config.api_key.clone();
+    async fn template(&self) -> anyhow::Result<String> {
         let client = Client::new();
 
         let query = r#"
@@ -42,12 +42,12 @@ impl Plugin for GithubCommitGraphPlugin {
 
         let body = json!({
             "query": query,
-            "variables": { "userName": username }
+            "variables": { "userName": self.username }
         });
 
         let resp = client
             .post("https://api.github.com/graphql")
-            .bearer_auth(token)
+            .bearer_auth(self.api_key.clone())
             .header("User-Agent", "byos_rs")
             .body(serde_json::to_string(&body)?)
             .send()
@@ -114,10 +114,18 @@ impl Plugin for GithubCommitGraphPlugin {
                 "average_contributions": average_contributions,
             },
             "base_url": "https://example.com",
-            "instance_name": "BYOS_rs",
+            "instance_name": format!("@{}", self.username),
         });
 
         let output = template.render(&globals)?;
-        Ok(render_html(output))
+        Ok(html_body(output))
+    }
+
+    async fn render(
+        &self,
+        template: String,
+        bmp_renderer: &BmpRenderer,
+    ) -> anyhow::Result<Vec<u8>> {
+        bmp_renderer.render_html(template)
     }
 }

@@ -1,1 +1,1 @@
-pub mod render;
+pub mod bmp_renderer;

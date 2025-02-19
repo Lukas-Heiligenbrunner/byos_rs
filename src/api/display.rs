@@ -1,7 +1,8 @@
-use crate::config::types::{Config, Plugin as PluginType, StandardPluginType};
+use crate::config::types::{Config, PluginType};
 use crate::plugins::github_commit_graph::plugin::GithubCommitGraphPlugin;
-use crate::plugins::Plugin;
-use crate::renderer::render::render_html;
+use crate::plugins::plugin::Plugin;
+use crate::plugins::static_image::plugin::StaticImagePlugin;
+use crate::renderer::bmp_renderer::BmpRenderer;
 use anyhow::anyhow;
 use log::{error, info};
 use rocket::serde::json::Json;
@@ -67,33 +68,61 @@ async fn create_screen(schedule_config: &Config) -> anyhow::Result<(String, u32)
     let plugin_configs = &schedule_config.plugin_config;
 
     let plugin: Box<dyn Plugin> = match schedule.plugin {
-        PluginType::Standard(p) => {
-            info!("Rendering a standard plugin: {:?}", p);
-
-            match p.plugin_type {
-                StandardPluginType::GithubCommitGraph => Box::from(GithubCommitGraphPlugin {
-                    config: plugin_configs.githubcommitgraph.clone().unwrap(),
-                }),
-                StandardPluginType::Weather => todo!("Weather"),
-                StandardPluginType::News => todo!("News"),
-            }
-        }
-        PluginType::Custom(p) => {
-            info!(
-                "Rendering a custom plugin: {};{};{}",
-                p.name, p.plugin_code, p.template
+        PluginType::GithubCommitGraph(v) => {
+            let token = v.api_key.unwrap_or(
+                plugin_configs
+                    .githubcommitgraph
+                    .clone()
+                    .ok_or(anyhow!("Missing Github Token"))?
+                    .api_key
+                    .ok_or(anyhow!("Missing Github Token"))?,
             );
-            todo!("Custom plugin rendering")
+            let username = v.username.unwrap_or(
+                plugin_configs
+                    .githubcommitgraph
+                    .clone()
+                    .ok_or(anyhow!("Missing Github Token"))?
+                    .username
+                    .ok_or(anyhow!("Missing Github Token"))?,
+            );
+
+            Box::from(GithubCommitGraphPlugin {
+                username,
+                api_key: token,
+            })
+        }
+        PluginType::StaticImage(v) => {
+            let path = match v.path {
+                Some(p) => p,
+                None => plugin_configs
+                    .staticimage
+                    .clone()
+                    .ok_or(anyhow!("Missing path"))?
+                    .path
+                    .ok_or(anyhow!("Missing path"))?,
+            };
+
+            Box::from(StaticImagePlugin { path })
+        }
+        PluginType::Custom(v) => {
+            info!(
+                "Custom plugin not implemented {:?} {:?} {:?}",
+                v.name, v.plugin_code, v.template
+            );
+            info!("{:?}", plugin_configs.custom);
+            todo!("Custom plugin not implemented")
         }
     };
 
+    let renderer = BmpRenderer::new(1024, 614);
+
     info!("Rendering Screen: {}", schedule.screen);
-    let html = plugin
-        .render()
+    let template = plugin
+        .template()
         .await
         .map_err(|e| anyhow!("Error rendering plugin: {:?}", e))?;
 
-    let html_digest = md5::compute(html.as_bytes());
+    let html_digest = md5::compute(template.as_bytes());
     let filename = format!("{:x}.bmp", html_digest);
     let file_path = format!("/tmp/{}", filename);
 
@@ -102,7 +131,7 @@ async fn create_screen(schedule_config: &Config) -> anyhow::Result<(String, u32)
         return Ok((filename, schedule.update_interval));
     }
 
-    let bmp = render_html(html, 1024, 614).map_err(|e| anyhow!("Error rendering html: {:?}", e))?;
+    let bmp = plugin.render(template, &renderer).await?;
 
     let mut file =
         File::create(file_path.as_str()).map_err(|e| anyhow!("Error creating file: {:?}", e))?;
