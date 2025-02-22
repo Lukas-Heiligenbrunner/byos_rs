@@ -1,3 +1,4 @@
+use crate::api::interceptors::token::Token;
 use log::info;
 use rocket::post;
 use rocket::serde::json::Json;
@@ -77,7 +78,10 @@ pub struct AdditionalInfo {
     )
 )]
 #[post("/log", data = "<logs>")]
-pub async fn log_endpoint(logs: Json<LogData>) -> Result<Json<LogRespose>, rocket::http::Status> {
+pub async fn log_endpoint(
+    logs: Json<LogData>,
+    _t: Token,
+) -> Result<Json<LogRespose>, rocket::http::Status> {
     info!("Received logs:\n{}", *logs);
 
     Ok(Json(LogRespose {

@@ -1,6 +1,9 @@
-use rocket::get;
+use crate::api::interceptors::device_id::DeviceId;
+use crate::config::types::Config;
+use log::warn;
 use rocket::serde::json::Json;
 use rocket::serde::{Deserialize, Serialize};
+use rocket::{get, State};
 use utoipa::{OpenApi, ToSchema};
 
 #[derive(OpenApi)]
@@ -23,11 +26,22 @@ pub struct SetupResponse {
     )
 )]
 #[get("/setup")]
-pub async fn setup() -> Result<Json<SetupResponse>, String> {
+pub async fn setup(
+    id: DeviceId,
+    schedule_config: &State<Config>,
+) -> Result<Json<SetupResponse>, String> {
+    let devices = &schedule_config.devices;
+
+    let device = devices
+        .iter()
+        .find(|d| DeviceId(d.mac_address.clone()) == id)
+        .ok_or(format!("Device not found. Id: {}", id.0))
+        .inspect_err(|e| warn!("{}", e))?;
+
     Ok(Json(SetupResponse {
         status: 200,
-        api_key: "42424242".to_string(),
-        friendly_id: "myTrmnl".to_string(),
+        api_key: device.token.clone(),
+        friendly_id: device.name.clone(),
         image_url: None,
         filename: None,
         message: "Setup complete".to_string(),

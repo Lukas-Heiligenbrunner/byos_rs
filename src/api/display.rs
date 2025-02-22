@@ -1,3 +1,5 @@
+use crate::api::interceptors::device_infos::DeviceInfos;
+use crate::api::interceptors::token::Token;
 use crate::config::types::{Config, PluginType};
 use crate::plugins::github_commit_graph::plugin::GithubCommitGraphPlugin;
 use crate::plugins::plugin::Plugin;
@@ -37,8 +39,10 @@ pub struct DisplayApi;
 #[get("/display")]
 pub async fn display(
     schedule_config: &State<Config>,
+    _t: Token,
+    device_infos: DeviceInfos,
 ) -> Result<Json<DisplayResponse>, rocket::http::Status> {
-    let (filename, update_interval) = match create_screen(schedule_config).await {
+    let (filename, update_interval) = match create_screen(schedule_config, device_infos).await {
         Ok(f) => f,
         Err(e) => {
             error!("Error creating screen: {:?}", e);
@@ -63,7 +67,10 @@ pub async fn display(
     }))
 }
 
-async fn create_screen(schedule_config: &Config) -> anyhow::Result<(String, u32)> {
+async fn create_screen(
+    schedule_config: &Config,
+    device_infos: DeviceInfos,
+) -> anyhow::Result<(String, u32)> {
     let schedule = schedule_config.match_plugin();
     let plugin_configs = &schedule_config.plugin_config;
 
@@ -114,7 +121,7 @@ async fn create_screen(schedule_config: &Config) -> anyhow::Result<(String, u32)
         }
     };
 
-    let renderer = BmpRenderer::new(1024, 614);
+    let renderer = BmpRenderer::new(device_infos.width, 614);
 
     info!("Rendering Screen: {}", schedule.screen);
     let template = plugin

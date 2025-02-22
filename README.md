@@ -54,6 +54,11 @@ plugin_config:
   githubcommitgraph:
     username: "lukas-heiligenbrunner"
     api_key: "<your_key>"
+
+devices:
+  - name: "Device1"
+    mac_address: "00:1A:2B:3C:4D:5E"
+    token: "42424242"
 ```
 
 If schdules overlap the first time match is used.
@@ -67,6 +72,3 @@ If schdules overlap the first time match is used.
 ## License
 
 This project is licensed under the MIT License. Feel free to contribute and modify as per the guidelines outlined in the license agreement.
-
-
-docker run --env SERVER_URL=http://192.168.0.194:8080 --env CONFIG_PATH=/test.yaml -p 8080:8080 -v ./data/test.yaml:/test.yaml b1595f86f1603120d8497c9a3fa394f3bb4bf4531c7975245076dc6b6c86d1a8

@@ -5,6 +5,14 @@ pub struct Config {
     pub default_screen: PluginType,
     pub schedules: Vec<Schedule>,
     pub plugin_config: PluginConfig,
+    pub devices: Vec<Device>,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct Device {
+    pub name: String,
+    pub mac_address: String,
+    pub token: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]
