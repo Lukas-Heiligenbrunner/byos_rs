@@ -121,7 +121,7 @@ async fn create_screen(
         }
     };
 
-    let renderer = BmpRenderer::new(device_infos.width, 614);
+    let renderer = BmpRenderer::new(device_infos.width, device_infos.width);
 
     info!("Rendering Screen: {}", schedule.screen);
     let template = plugin
