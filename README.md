@@ -14,7 +14,7 @@ A schedule is configurable with a config file. eg:
 
 ```yaml
 default_screen:
-  plugin_type: githubcommitgraph
+  !githubcommitgraph
 
 schedules:
   - screen: "GithubDay"
