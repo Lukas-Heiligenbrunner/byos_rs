@@ -5,6 +5,7 @@ use async_trait::async_trait;
 use bitvec::bitvec;
 use bitvec::order::Msb0;
 use image::{GenericImageView, Pixel};
+use logcall::logcall;
 use rocket::serde::Deserialize;
 use std::fs::File;
 use std::io::BufReader;
@@ -17,11 +18,13 @@ pub struct StaticImagePlugin {
 
 #[async_trait]
 impl Plugin for StaticImagePlugin {
+    #[logcall(err = "warn")]
     async fn template(&self) -> anyhow::Result<String> {
         Ok(self.path.clone())
     }
 
-    async fn render(&self, _: String, bmp_renderer: &BmpRenderer) -> anyhow::Result<Vec<u8>> {
+    #[logcall(err = "warn")]
+    async fn render(&self, _t: String, bmp_renderer: &BmpRenderer) -> anyhow::Result<Vec<u8>> {
         let img = image::load(
             BufReader::new(File::open(self.path.clone())?),
             image::ImageFormat::from_extension(

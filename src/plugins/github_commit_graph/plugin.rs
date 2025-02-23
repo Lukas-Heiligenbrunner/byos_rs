@@ -7,6 +7,7 @@ use crate::plugins::utils::html_body;
 use crate::renderer::bmp_renderer::BmpRenderer;
 use async_trait::async_trait;
 use liquid::ParserBuilder;
+use logcall::logcall;
 use reqwest::Client;
 use serde::Deserialize;
 use serde_json::json;
@@ -19,6 +20,7 @@ pub struct GithubCommitGraphPlugin {
 
 #[async_trait]
 impl Plugin for GithubCommitGraphPlugin {
+    #[logcall(err = "warn")]
     async fn template(&self) -> anyhow::Result<String> {
         let client = Client::new();
 
@@ -121,6 +123,7 @@ impl Plugin for GithubCommitGraphPlugin {
         Ok(html_body(output))
     }
 
+    #[logcall(err = "warn")]
     async fn render(
         &self,
         template: String,

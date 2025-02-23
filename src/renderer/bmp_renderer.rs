@@ -8,6 +8,7 @@ use image::{GenericImageView, Pixel};
 use log::warn;
 use std::io::{Cursor, Write};
 
+#[derive(Debug)]
 pub struct BmpRenderer {
     pub width: u32,
     pub height: u32,

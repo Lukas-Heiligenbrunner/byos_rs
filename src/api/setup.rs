@@ -1,6 +1,6 @@
 use crate::api::interceptors::device_id::DeviceId;
 use crate::config::types::Config;
-use log::warn;
+use result_logger::ResultLogger;
 use rocket::serde::json::Json;
 use rocket::serde::{Deserialize, Serialize};
 use rocket::{get, State};
@@ -36,7 +36,7 @@ pub async fn setup(
         .iter()
         .find(|d| DeviceId(d.mac_address.clone()) == id)
         .ok_or(format!("Device not found. Id: {}", id.0))
-        .inspect_err(|e| warn!("{}", e))?;
+        .warn()?;
 
     Ok(Json(SetupResponse {
         status: 200,

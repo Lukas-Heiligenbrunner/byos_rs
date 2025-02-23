@@ -7,6 +7,7 @@ use crate::plugins::static_image::plugin::StaticImagePlugin;
 use crate::renderer::bmp_renderer::BmpRenderer;
 use anyhow::anyhow;
 use log::{error, info};
+use result_logger::ResultLogger;
 use rocket::serde::json::Json;
 use rocket::{get, State};
 use serde::{Deserialize, Serialize};
@@ -140,10 +141,12 @@ async fn create_screen(
 
     let bmp = plugin.render(template, &renderer).await?;
 
-    let mut file =
-        File::create(file_path.as_str()).map_err(|e| anyhow!("Error creating file: {:?}", e))?;
+    let mut file = File::create(file_path.as_str())
+        .map_err(|e| anyhow!("Error creating file: {:?}", e))
+        .warn()?;
     file.write_all(&bmp)
-        .map_err(|e| anyhow!("Error writing file: {:?}", e))?;
+        .map_err(|e| anyhow!("Error writing file: {:?}", e))
+        .warn()?;
 
     Ok((filename, schedule.update_interval))
 }
