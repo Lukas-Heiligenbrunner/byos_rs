@@ -6,6 +6,7 @@ WORKDIR /app
 
 # Copy the Rust project files
 COPY src /app/src
+COPY rsc /app/rsc
 COPY Cargo.lock /app
 COPY Cargo.toml /app
 
