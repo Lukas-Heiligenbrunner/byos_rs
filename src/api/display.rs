@@ -43,6 +43,15 @@ pub async fn display(
     _t: Token,
     device_infos: DeviceInfos,
 ) -> Result<Json<DisplayResponse>, rocket::http::Status> {
+    info!(
+        "Display Request from {}; Version: {}; Battery voltage: {}; Width: {}, Height: {}",
+        device_infos.id,
+        device_infos.fw_version,
+        device_infos.batt_voltage,
+        device_infos.width,
+        device_infos.height
+    );
+
     let (filename, update_interval) = match create_screen(schedule_config, device_infos).await {
         Ok(f) => f,
         Err(e) => {
@@ -74,72 +83,77 @@ async fn create_screen(
 ) -> anyhow::Result<(String, u32)> {
     let schedule = schedule_config.match_plugin();
     let plugin_configs = &schedule_config.plugin_config;
-
-    let plugin: Box<dyn Plugin> = match schedule.plugin {
-        PluginType::GithubCommitGraph(v) => {
-            let token = v.api_key.unwrap_or(
-                plugin_configs
-                    .githubcommitgraph
-                    .clone()
-                    .ok_or(anyhow!("Missing Github Token"))?
-                    .api_key
-                    .ok_or(anyhow!("Missing Github Token"))?,
-            );
-            let username = v.username.unwrap_or(
-                plugin_configs
-                    .githubcommitgraph
-                    .clone()
-                    .ok_or(anyhow!("Missing Github Token"))?
-                    .username
-                    .ok_or(anyhow!("Missing Github Token"))?,
-            );
-
-            Box::from(GithubCommitGraphPlugin {
-                username,
-                api_key: token,
-            })
-        }
-        PluginType::StaticImage(v) => {
-            let path = match v.path {
-                Some(p) => p,
-                None => plugin_configs
-                    .staticimage
-                    .clone()
-                    .ok_or(anyhow!("Missing path"))?
-                    .path
-                    .ok_or(anyhow!("Missing path"))?,
-            };
-
-            Box::from(StaticImagePlugin { path })
-        }
-        PluginType::Custom(v) => {
-            info!(
-                "Custom plugin not implemented {:?} {:?} {:?}",
-                v.name, v.plugin_code, v.template
-            );
-            info!("{:?}", plugin_configs.custom);
-            todo!("Custom plugin not implemented")
-        }
-    };
-
     let renderer = BmpRenderer::new(device_infos.width, device_infos.height);
 
-    info!("Rendering Screen: {}", schedule.screen);
-    let template = plugin
-        .template()
-        .await
-        .map_err(|e| anyhow!("Error rendering plugin: {:?}", e))?;
+    let (bmp, filename) = if device_infos.batt_voltage < 3.1 {
+        let recharge_img = include_bytes!("../../rsc/recharge.bmp");
+        (recharge_img.to_vec(), "recharge.bmp".to_string())
+    } else {
+        let plugin: Box<dyn Plugin> = match schedule.plugin {
+            PluginType::GithubCommitGraph(v) => {
+                let token = v.api_key.unwrap_or(
+                    plugin_configs
+                        .githubcommitgraph
+                        .clone()
+                        .ok_or(anyhow!("Missing Github Token"))?
+                        .api_key
+                        .ok_or(anyhow!("Missing Github Token"))?,
+                );
+                let username = v.username.unwrap_or(
+                    plugin_configs
+                        .githubcommitgraph
+                        .clone()
+                        .ok_or(anyhow!("Missing Github Token"))?
+                        .username
+                        .ok_or(anyhow!("Missing Github Token"))?,
+                );
 
-    let html_digest = md5::compute(template.as_bytes());
-    let filename = format!("{:x}.bmp", html_digest);
+                Box::from(GithubCommitGraphPlugin {
+                    username,
+                    api_key: token,
+                })
+            }
+            PluginType::StaticImage(v) => {
+                let path = match v.path {
+                    Some(p) => p,
+                    None => plugin_configs
+                        .staticimage
+                        .clone()
+                        .ok_or(anyhow!("Missing path"))?
+                        .path
+                        .ok_or(anyhow!("Missing path"))?,
+                };
+
+                Box::from(StaticImagePlugin { path })
+            }
+            PluginType::Custom(v) => {
+                info!(
+                    "Custom plugin not implemented {:?} {:?} {:?}",
+                    v.name, v.plugin_code, v.template
+                );
+                info!("{:?}", plugin_configs.custom);
+                todo!("Custom plugin not implemented")
+            }
+        };
+
+        info!("Rendering Screen: {}", schedule.screen);
+        let template = plugin
+            .template()
+            .await
+            .map_err(|e| anyhow!("Error rendering plugin: {:?}", e))?;
+
+        let html_digest = md5::compute(template.as_bytes());
+        let filename = format!("{:x}.bmp", html_digest);
+
+        (plugin.render(template, &renderer).await?, filename)
+    };
+
     let file_path = format!("/tmp/{}", filename);
 
     if Path::new(file_path.as_str()).exists() {
         info!("File already exists: {}", file_path);
         return Ok((filename, schedule.update_interval));
     }
-
-    let bmp = plugin.render(template, &renderer).await?;
 
     let mut file = File::create(file_path.as_str())
         .map_err(|e| anyhow!("Error creating file: {:?}", e))
