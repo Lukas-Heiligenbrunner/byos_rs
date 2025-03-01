@@ -145,16 +145,17 @@ async fn create_screen(
         let html_digest = md5::compute(template.as_bytes());
         let filename = format!("{:x}.bmp", html_digest);
 
+        let file_path = format!("/tmp/{}", filename);
+
+        if Path::new(file_path.as_str()).exists() {
+            info!("File already exists: {}", file_path);
+            return Ok((filename, schedule.update_interval));
+        }
+
         (plugin.render(template, &renderer).await?, filename)
     };
 
     let file_path = format!("/tmp/{}", filename);
-
-    if Path::new(file_path.as_str()).exists() {
-        info!("File already exists: {}", file_path);
-        return Ok((filename, schedule.update_interval));
-    }
-
     let mut file = File::create(file_path.as_str())
         .map_err(|e| anyhow!("Error creating file: {:?}", e))
         .warn()?;
