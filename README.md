@@ -1,3 +1,8 @@
+> ⚠️ **This project is archived and no longer maintained.**
+> 
+> This repository is kept for reference only. The original byos implementation grew very major and there is no point to compete with it.
+
+
 # BYOS_rs
 
 This is a Rust implementation of a self-hostable server implementation for TRMNL displays.
